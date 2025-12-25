@@ -1,81 +1,144 @@
-✅ README Template: Program 3 — LU Factorization (No, Partial, Complete Pivoting)
-📌 Overview
+# LU Factorization with No Pivoting, Partial Pivoting, and Complete Pivoting
 
-This project develops a unified LU factorization function supporting:
+## Overview
+This project implements a **dense LU factorization algorithm** using **Gaussian elimination** under three pivoting strategies:
 
-No pivoting
+- **No pivoting:** `A = LU`
+- **Partial pivoting:** `PA = LU`
+- **Complete pivoting:** `PAQ = LU`
 
-Partial pivoting
+The algorithm is tested empirically on a wide range of **structured matrices** to evaluate **numerical stability**, **accuracy**, and **growth behavior** as matrix size increases. Performance is assessed using **factorization error**, **residual error**, **growth factor**, and **condition number** metrics.
 
-Complete pivoting
+All routines are implemented in **MATLAB**.
 
-The function performs in-place factorization and stores permutation information in Prow and Pcol. Comprehensive empirical testing evaluates accuracy, growth factor, and stability.
+---
 
-🧠 Key Concepts
+## Methods Implemented
 
-Gaussian elimination
+### 1. LU Factorization Without Pivoting
+Assumes the matrix is well-conditioned (e.g., diagonally dominant).
 
-Pivoting strategies
+- Fastest method
+- No row or column swaps
+- Fails when pivot elements are zero or very small
+- Least numerically stable
 
-Permutation matrices (row & column)
+---
 
-Growth factor analysis
+### 2. LU Factorization with Partial Pivoting
+Computes
 
-Error guards for near-singular matrices
+    P A = L U
 
-Backsubstitution and reconstruction
+by swapping rows to move the largest element in the active column into the pivot position.
 
-⚙️ Implemented Methods
-1. No Pivoting (A = LU)
+- Improves numerical stability
+- Adds an `O(n²)` pivot search cost
+- Standard method used in practice
 
-Fastest but numerically risky.
+---
 
-2. Partial Pivoting (PA = LU)
+### 3. LU Factorization with Complete Pivoting
+Computes
 
-Stable for most matrices; industry standard.
+    P A Q = L U
 
-3. Complete Pivoting (PAQ = LU)
+by swapping both rows and columns to select the largest element in the active submatrix.
 
-Most stable but slowest.
+- Most numerically stable
+- Highest computational cost
+- Best control of growth factor
 
-🧪 Structured Matrix Tests
+---
 
-The algorithm is tested on:
+## Implementation Details
 
-Diagonal matrices
+- All methods are implemented in **one function** using a routine-selection flag
+- `L` and `U` are stored **in-place** within a single matrix for memory efficiency
+- Row and column permutations are tracked using **permutation vectors**
+- Rank-one updates are used to efficiently update trailing submatrices
+- Error guards prevent division by near-zero pivots (`< 1e-12`)
 
-Anti-diagonal matrices
+### Computational Complexity
+- No pivoting: `O(n³)`
+- Partial pivoting: `O(n³)`
+- Complete pivoting: `O(n³)` with higher constants due to pivot search
 
-Diagonal + anti-diagonal
+---
 
-Unit lower triangular
+## Experimental Design
 
-General lower triangular
+Matrices of increasing size were tested under various **structured configurations**, with multiple trials per size. The following metrics were computed using the matrix 2-norm.
 
-Growth factor matrices
+### Metrics
 
-Metrics:
+**Factorization Error**
 
-Factorization error
+    || P_r A P_c − L U ||₂ / ||A||₂
 
-Residual error
+**Residual Error**
 
-Growth factor γ
+    || b − A x ||₂ / ||b||₂
 
-Conditioning number κ2(A)
+**Growth Factor**
 
-📈 Results Summary
+    || |L| |U| ||₂ / ||A||₂
 
-No pivoting fails on singular / anti-diagonal cases (as expected).
+**Condition Number**
 
-Partial and complete pivoting handle all structured tests.
+    κ₂(A) = ||A||₂ · ||A⁻¹||₂
 
-Growth factor aligns with theory:
+Mean and maximum values were recorded for each metric across trials.
 
-Explodes for LU without pivoting
+---
 
-Controlled for partial
+## Structured Matrix Tests
 
-Smallest for complete
+The algorithm was tested on the following matrix classes:
 
-Error metrics near machine precision except in ill-conditioned constructions.
+- Diagonal matrices
+- Anti-diagonal matrices
+- Diagonal + anti-diagonal matrices
+- Unit lower triangular matrices
+- General lower triangular matrices
+- Tridiagonal, diagonally dominant matrices
+- Growth-factor stress matrices
+- Symmetric positive definite matrices
+
+---
+
+## Results and Observations
+
+- Diagonal and triangular matrices produced near-zero errors and stable growth factors
+- Anti-diagonal matrices fail without pivoting but succeed with partial and complete pivoting
+- Growth-factor stress matrices demonstrate the necessity of **complete pivoting**
+- Ill-conditioned matrices trigger error guards or yield large errors
+- Complete pivoting consistently offers the best numerical stability at the cost of speed
+- Conditioning strongly correlates with stability and error behavior
+
+---
+
+## Files Included
+
+- `LUdense.m`  
+  In-place LU factorization with selectable pivoting strategy
+
+- `Lvsolve.m`  
+  Forward substitution solver
+
+- `Uvsolve.m`  
+  Backward substitution solver
+
+- `TestDriverProgram3.m`  
+  Runs all structured matrix tests and reports metrics
+
+All tests complete in under 30 seconds.
+
+---
+
+## Key Takeaways
+
+- Pivoting is essential for numerical stability in LU factorization
+- Complete pivoting controls growth factor most effectively
+- Matrix structure and conditioning strongly influence algorithm performance
+- In-place storage significantly improves memory efficiency
